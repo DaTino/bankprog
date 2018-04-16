@@ -1,5 +1,7 @@
 //bank.c
 #include <stdio.h>
+#include "search_sa.h"
+
 #define MAX_ACCOUNTS 50
 
 struct bank_account_list
@@ -21,7 +23,7 @@ int main() {
     FILE *fp;
     struct bank_account_list account[MAX_ACCOUNTS];
 
-/*   
+   
     fp = fopen("bank.dat", "wb");
     if (!fp) {
         printf("File open unsuccessful!\n");
@@ -50,15 +52,14 @@ int main() {
     fwrite(&account, sizeof(account), 1, fp);
 
     fclose(fp);
-*/
-    fp = fopen("bank.dat", "rb");
+///////////////////////////////////////
+    fp = fopen("bank.dat", "rb+");
     if (!fp) {
         printf("File open unsuccessful!\n");
         return 1;
     }
 
      for (counter=1; counter < 4; counter++) {
-        // fseek(fp, sizeof(account)*counter, SEEK_SET);
          fread(&account, sizeof(account), 1, fp);
          printf("First name: %s", account[counter].first_name);
          printf("Middle ini: %c\n", account[counter].middle_ini);
@@ -67,6 +68,17 @@ int main() {
          printf("Acct Balnc: %.2lf\n", account[counter].account_balance);
      }
 
+    int choice;
+    int saindex
+    printf("What account you want: ");
+    scanf(" %d", &choice);
+    saindex = search_sa(fp, choice);
+    if (choice == -1) {
+        printf("Not found!\n");
+    }
+    else {
+        printf("Found it, at index %d", saindex);
+    }
 
 /*
     int choice;
