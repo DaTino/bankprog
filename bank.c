@@ -12,33 +12,26 @@ int main() {
     int counter;
     FILE *fp;
     struct bank_account_list account[MAX_ACCOUNTS];
-/*
-    fp = fopen("bank.dat", "wb");
+
+    fp = fopen("bank.dat", "rb+");
     if (!fp) {
         printf("File open unsuccessful!\n");
         return 1;
     }
-    for (counter = 1; counter < 3; counter++) {
-        printf("First name %d: ", counter);
-        fgets(account[counter].first_name, 100, stdin);
-        printf("Middle ini %d: ", counter);
-        scanf(" %c", &account[counter].middle_ini);
-        getchar();
-        printf("Last name %d: ", counter);
-        fgets(account[counter].last_name, 100, stdin);
-        printf("acnt num %d: ", counter);
-        scanf(" %d", &account[counter].account_num);
-        getchar();
-        printf("account balance %d: ", counter);
-        scanf(" %lf", &account[counter].account_balance);
-        getchar();  
-        fflush(stdin);
-     }
-    fwrite(&account, sizeof(account), 1, fp);
-    fclose(fp);
-    */
+/*
+    for (counter = 0; counter < 50; counter++) {
+        account[counter].first_name[0] = '\0';
+        account[counter].middle_ini = ' ';
+        account[counter].last_name[0] = '\0';
+        account[counter].account_num = 0;
+        account[counter].account_balance = 0.00;
+        fseek(fp, sizeof(account)*counter, SEEK_SET);
+        fwrite(&account, sizeof(account), 1, fp);
+    }
+
+*/
 ///////////////////////////////////////
-    fp = fopen("bank.dat", "rb+");
+/*    fp = fopen("bank.dat", "rb+");
     if (!fp) {
         printf("File open unsuccessful!\n");
         return 1;
@@ -65,20 +58,26 @@ int main() {
         printf("Found it, at index %d", saindex);
     }
 
+*/
 
-    int choice;
-    while (chioce != 0) {
+    int anumlookup;
+    int acctindex;
 
-        printf("Welcome to the interactive banking system. Please select and option:\n
-                0. Exit\n
-                1. Deposit\n
-                2. Withdrawal\n
-                3. Add account\n
-                4. Remove account\n
-                5. Balance inquiry\n
-                6. View accounts\n
-               " );
-        choice = getchar();
+    int choice = -1;
+    while (choice != 0) {
+
+        printf("======================================================================\n");
+        printf("Welcome to the interactive banking system. Please select an option:\n");
+        printf("0. Exit\n");
+        printf("1. Deposit\n");
+        printf("2. Withdrawal\n");
+        printf("3. Add account\n");
+        printf("4. Remove account\n");
+        printf("5. Balance inquiry\n");
+        printf("6. View accounts\n");
+        printf("======================================================================\n");
+        scanf(" %d", &choice);
+        getchar();
 
         switch(choice) {
             
@@ -92,13 +91,14 @@ int main() {
                 
                 printf("Please enter your account number: ");
                 scanf(" %d", anumlookup);
-                acctindex = search_sa(fp, account, choice);
+                acctindex = search_sa(fp, account, anumlookup);
 
                 if (acctindex == -1) {
                     printf("Your account number was not found.\n");
                     break;
                  }
                 else {
+                    fseek(fp, sizeof(account)*acctindex, SEEK_SET);
                     int depamt=0;
                     printf("Enter deposit amount: ");
                     scanf(" %d", depamt);
@@ -113,19 +113,20 @@ int main() {
 
                 printf("Please enter your account number: ");
                 scanf(" %d", anumlookup);
-                acctindex = search_sa(fp, account, choice);
+                acctindex = search_sa(fp, account, anumlookup);
 
                 if (acctindex == -1) {
                     printf("Your account number was not found.\n");
                     break;
                 }
                 else {
+                    fseek(fp, sizeof(account)*acctindex, SEEK_SET);
                     int wthamt=0;
                     printf("Enter withdrawal amount: ");
                     scanf(" %d", wthamt);
-                    account[acctindex].account_balance -= depamt;
+                    account[acctindex].account_balance -= wthamt;
                     fwrite(&account, sizeof(account), 1, fp);
-                    printf("Your new balance is: %d", account[acctindex].amount_balance;
+                    printf("Your new balance is: %d", account[acctindex].account_balance);
                 }
                 break;
             case 3:
@@ -133,18 +134,19 @@ int main() {
                  * if account number already in use, program complains and doesnt update.
                  */
                 acctindex = search_sa(fp, account, 0);
+                fseek(fp, sizeof(account)*acctindex, SEEK_SET);
 
-                printf("First name %d: ", counter);
+                printf("First name %d: ", acctindex);
                 fgets(account[acctindex].first_name, 100, stdin);
-                printf("Middle ini %d: ", counter);
+                printf("Middle ini %d: ", acctindex);
                 scanf(" %c", &account[acctindex].middle_ini);
                 getchar();
-                printf("Last name %d: ", counter);
+                printf("Last name %d: ", acctindex);
                 fgets(account[acctindex].last_name, 100, stdin);
-                printf("acnt num %d: ", counter);
+                printf("acnt num %d: ", acctindex);
                 scanf(" %d", &account[acctindex].account_num);
                 getchar();
-                printf("account balance %d: ", counter);
+                printf("account balance %d: ", acctindex);
                 scanf(" %lf", &account[acctindex].account_balance);
                 getchar();
                 
@@ -159,52 +161,66 @@ int main() {
                  */
                 printf("Please enter your account number: ");
                 scanf(" %d", anumlookup);
-                acctindex = search_sa(fp, account, choice);
+                acctindex = search_sa(fp, account, anumlookup);
 
                 if (acctindex == -1) {
                     printf("Your account number was not found.\n");
                     break;
                 }
                 else {
-                    account[acctindex] = {" ", ' ', " ", 0, 0.00};
+                    fseek(fp, sizeof(account)*acctindex, SEEK_SET);
+                    account[acctindex].first_name[0]    = '\0';
+                    account[acctindex].middle_ini       = ' ';
+                    account[acctindex].last_name[0]     = '\0';
+                    account[acctindex].account_num      = 0;
+                    account[acctindex].account_balance  = 0.00;
+
                 }
                 break;
             case 5:
                  /* program asks for account number and prints out all info about account.
                  * if number doesnt exist, reports it and nothing changes.
                  */
+                fseek(fp, sizeof(account)*0, SEEK_SET);
                 printf("Please enter your account number: ");
                 scanf(" %d", anumlookup);
-                acctindex = search_sa(fp, account, choice);
+                getchar();
+                acctindex = search_sa(fp, account, anumlookup);
+                
+                printf("tits");
 
                 if (acctindex == -1) {
                     printf("Your account number was not found.\n");
                     break;
                 }
                 else {
+                    fseek(fp, sizeof(account)*acctindex, SEEK_SET);
                     fread(&account, sizeof(account), 1, fp);
-                    printf("First name: %s", account[counter].first_name);
-                    printf("Middle ini: %c\n", account[counter].middle_ini);
-                    printf("Last name : %s", account[counter].last_name);
-                    printf("Acct num  : %d\n", account[counter].account_num);
-                    printf("Acct Balnc: %.2lf\n", account[counter].account_balance);
+                    printf("First name: %s", account[acctindex].first_name);
+                    printf("Middle ini: %c\n", account[acctindex].middle_ini);
+                    printf("Last name : %s", account[acctindex].last_name);
+                    printf("Acct num  : %d\n", account[acctindex].account_num);
+                    printf("Acct Balnc: %.2lf\n", account[acctindex].account_balance);
                 }
                 break;
             case 6:
                  /* program reports all information about all acounts one by one.
                  */
-                for (counter=1; counter < 4; counter++) {
+                for (acctindex=1; acctindex < 50; acctindex++) {
                     fread(&account, sizeof(account), 1, fp);
-                    printf("First name: %s", account[counter].first_name);
-                    printf("Middle ini: %c\n", account[counter].middle_ini);
-                    printf("Last name : %s", account[counter].last_name);
-                    printf("Acct num  : %d\n", account[counter].account_num);
-                    printf("Acct Balnc: %.2lf\n", account[counter].account_balance);
+                    if (account[acctindex].account_num != 0) {
+                        printf("First name: %s", account[acctindex].first_name);
+                        printf("Middle ini: %c\n", account[acctindex].middle_ini);
+                        printf("Last name : %s", account[acctindex].last_name);
+                        printf("Acct num  : %d\n", account[acctindex].account_num);
+                        printf("Acct Balnc: %.2lf\n", account[acctindex].account_balance);
+                    }
                 }
                 break;
             default:
                  /* print that they didnt select a correct option and try again.
                  */
+                 printf("Whoa! Something didn't go right.\n");
         }
 
     }
